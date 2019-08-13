@@ -2,5 +2,33 @@
 //====PUERTO====
 //==============
 
+/**Variable de Prod */
 process.env.PORT = process.env.PORT || 3000;
+
+
+
+
+//==============
+//===ENTORNO====
+//==============
+
+/** Variable de Prod */
+process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
+
+//====================
+//===Base de datos====
+//====================
+
+let urlDB;
+
+
+if(process.env.NODE_ENV === 'dev'){
+    urlDB = 'mongodb://localhost:27017/cafe';
+    console.log(urlDB);
+}else{
+    urlDB = 'mongodb+srv://Federico:WeIMbmcCf91mgEv8@cluster0-emqn5.mongodb.net/test';
+    console.log(urlDB);
+}
+
+process.env.urlDB = urlDB;
 
