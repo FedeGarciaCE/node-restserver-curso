@@ -107,8 +107,7 @@ app.delete('/usuario/:id', [verificaToken,verificarAdmin_Role] , function(req, r
     let cambiaEstado = {
         estado:false
     }
-    let body = _.pick(req.body,['nombre','email','img','role','estado']);
-
+    
     Usuario.findByIdAndUpdate(id,cambiaEstado ,{new:true}, (err,usuarioDB)=>{
         if (err){
             return res.status(400).json({
