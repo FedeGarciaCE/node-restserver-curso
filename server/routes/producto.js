@@ -12,10 +12,11 @@ let Producto = require ('../models/producto');
 app.get('/producto', verificaToken, (req,res)=>{
     //populate = usuarios y categoria
     //paginado
-    Producto.find({})
-        .sort('categoria')
-        .populate('usuario', 'usuario categoria')
-        .exec((err,productoDB)=>{
+    Producto.find({disponible:true})
+        .limit(5)
+        .populate('usuario', 'nombre email')
+        .populate('categoria','descripcion')
+        .exec((err,productosDB)=>{
 
             if (err){
                 return res.status(400).json({
@@ -26,7 +27,7 @@ app.get('/producto', verificaToken, (req,res)=>{
 
             res.json({
                 ok:true,
-                productoDB
+                productosDB
             })
     });
 });
@@ -39,8 +40,9 @@ app.get('/producto/:id', verificaToken, (req,res)=>{
     //paginado
     let id = req.params.id;
     
-    Producto.findById(id,{})
-        .populate('usuario', 'usuario categoria')
+    Producto.findById(id)
+        .populate('usuario', 'nombre email')
+        .populate('categoria','nombre')
         .exec((err,productoDB)=>{
             if (err){
                 return res.status(500).json({
@@ -50,7 +52,7 @@ app.get('/producto/:id', verificaToken, (req,res)=>{
             }
 
             if(!productoDB){
-                return res.status(500).json({
+                return res.status(400).json({
                     ok:false,
                     err:{
                         message:"El id no es correcto"
@@ -70,11 +72,12 @@ app.get('/producto/:id', verificaToken, (req,res)=>{
 app.post('/producto', verificaToken ,(req,res)=>{
     let body = req.body
     
-    producto = new Producto({
+    let producto = new Producto({
         nombre:body.nombre,
         precioUni:body.precioUni,
         descripcion:body.descripcion,
-        categoria: req.categoria._id,
+        disponible:body.disponible,
+        categoria: body.categoria,
         usuario: req.usuario._id
     });
 
@@ -87,14 +90,7 @@ app.post('/producto', verificaToken ,(req,res)=>{
             });
         }
 
-        if (!productoBD){
-            return res.status(500).json({
-                ok:false,
-                err
-            });
-        }
-
-        res.json({
+        res.status(200).json({
             ok:true,
             producto:productoBD
         })
@@ -108,14 +104,15 @@ app.post('/producto', verificaToken ,(req,res)=>{
 //===========================
 // ACTUALIZAR UN PRODUCTO 
 //===========================
-app.put('/producto/:id', (req,res)=>{
+app.put('/producto/:id', verificaToken, (req,res)=>{
     //grabar usuario
     //Grabar categoria del listado
     let id= req.params.id;
-    let body = _.pick(req.body,['nombre precioUni descripción']); //Underscore, solo se permite hacer put sobre estos campos del objeto
 
-    Producto.findByIdAndUpdate(id, body, {new: true, runValidators:true}, (err,productoDB) =>{
+    Producto.findById(id, (err,productoDB) =>{
         
+        let body = req.body;
+
         if (err){
             return res.status(500).json({
                 ok:false,
@@ -123,9 +120,33 @@ app.put('/producto/:id', (req,res)=>{
             });
         }
 
-        res.json({
-            ok: true,
-            producto: productoDB
+        if (!productoDB){
+            return res.status(500).json({
+                ok:false,
+                err:{
+                    message:"Id no existe"
+                }
+            });
+        }
+
+        productoDB.nombre = body.nombre;
+        productoDB.categoria = body.categoria;
+        productoDB.disponible = body.disponible;
+        productoDB.descripcion = body.descripcion;
+        productoDB.precioUni = body.precioUni;
+        
+        productoDB.save((err,productoGuardado)=>{
+            if (err){
+                return res.status(500).json({
+                    ok:false,
+                    err
+                });
+            }
+
+            res.json({
+                ok:true,
+                producto:productoGuardado
+            });
         });
 
     });
@@ -136,14 +157,14 @@ app.put('/producto/:id', (req,res)=>{
 //===========================
 // BORRAR UN PRODUCTO 
 //===========================
-app.delete('/producto/:id', (req,res)=>{
+app.delete('/producto/:id', [verificaToken,verificarAdmin_Role], (req,res)=>{
     //Borrado logico disponible en false
     let id = req.params.id;
     let cambiaEstado = {
         estado:false
     }
     
-    Producto.findByIdAndUpdate(id, cambiaEstado, {new:true}, (err,productoDB)=>{
+    Producto.findById(id, (err,productoDB)=>{
         if (err){
             return res.status(500).json({
                 ok:false,
@@ -159,10 +180,22 @@ app.delete('/producto/:id', (req,res)=>{
                 }
             })
         }
-        res.json({
-            ok: true,
-            producto: productoDB,
-        });
+
+        productoDB.disponible = false
+
+        productoDB.save ((err,productoDB)=>{
+            if (err){
+                return res.status(500).json({
+                    ok:false,
+                    err
+                });
+            }
+
+            res.json({
+                ok:true,
+                producto:productoDB
+            })
+        })
     });
 });
 

@@ -6,7 +6,9 @@ const Usuario = require('../models/usuario');
 const { verificaToken,verificarAdmin_Role } = require('../middlewares/autenticacion');
 const app = express();
 
-
+//=======================
+// MOSTRAR USUARIOS
+//=======================
 app.get('/usuario', verificaToken ,(req, res) => {
 
     
@@ -43,7 +45,10 @@ app.get('/usuario', verificaToken ,(req, res) => {
 
 
 });
- 
+
+//=======================
+// CARGAR USUARIOS
+//=======================
 app.post('/usuario', [verificaToken,verificarAdmin_Role] , function(req, res) {
     let body = req.body;
     
@@ -76,6 +81,9 @@ app.post('/usuario', [verificaToken,verificarAdmin_Role] , function(req, res) {
     
 });
 
+//=======================
+// ACTUALIZAR USUARIO
+//=======================
 app.put('/usuario/:id', [verificaToken,verificarAdmin_Role] , function(req, res) {
     let id= req.params.id;
     let body = _.pick(req.body,['nombre','email','img','role','estado']); //Underscore, solo se permite hacer put sobre estos campos del objeto
@@ -101,13 +109,16 @@ app.put('/usuario/:id', [verificaToken,verificarAdmin_Role] , function(req, res)
 
 });
 
+//=======================
+// BORRAR USUARIO
+//=======================
 app.delete('/usuario/:id', [verificaToken,verificarAdmin_Role] , function(req, res){
     
     let id = req.params.id;
     let cambiaEstado = {
         estado:false
     }
-    
+
     Usuario.findByIdAndUpdate(id,cambiaEstado ,{new:true}, (err,usuarioDB)=>{
         if (err){
             return res.status(400).json({
