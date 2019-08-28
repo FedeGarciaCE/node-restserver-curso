@@ -160,9 +160,6 @@ app.put('/producto/:id', verificaToken, (req,res)=>{
 app.delete('/producto/:id', [verificaToken,verificarAdmin_Role], (req,res)=>{
     //Borrado logico disponible en false
     let id = req.params.id;
-    let cambiaEstado = {
-        estado:false
-    }
     
     Producto.findById(id, (err,productoDB)=>{
         if (err){

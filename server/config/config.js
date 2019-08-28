@@ -6,8 +6,6 @@
 process.env.PORT = process.env.PORT || 3000;
 
 
-
-
 //==============
 //ENTORNO
 //==============
@@ -27,7 +25,6 @@ process.env.CADUCIDAD_TOKEN = '48h'
 //=====================
 //SEED de autenticación
 //=====================
-
 
 process.env.SEED_TOKEN = process.env.SEED_TOKEN || 'seed-desarrollo'
 

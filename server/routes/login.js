@@ -61,11 +61,12 @@ app.post('/login', (req,res)=>{
 async function verify(token) {
     const ticket = await client.verifyIdToken({
         idToken: token,
-        audience: process.env.CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
+        audience: process.env.CLIENT_ID
+        // Specify the CLIENT_ID of the app that accesses the backend
         // Or, if multiple clients access the backend:
         //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
-    const payload = ticket.getPayload();
+    payload = ticket.getPayload(); 
     
     return {
         nombre:payload.name,
@@ -76,15 +77,15 @@ async function verify(token) {
     
 }
 
-app.post('/google', async (req,res)=>{
+app.post('/google', async (req,res)=>{ 
     
     let token = req.body.idtoken; //Recibo token de google
 
     let googleUser = await verify(token) //Verifico token de google
-                            .catch(err =>{
+                            .catch(e =>{
                                 return res.status(403).json({
                                     ok:false,
-                                    err:err
+                                    e
                                 });
                             });
     
@@ -113,7 +114,7 @@ app.post('/google', async (req,res)=>{
                 return res.json({
                     ok:true,
                     usuario:usuarioDB,
-                    token
+                    token,
                 });
             }
         }else{// Si el usuario no existe en nuestra base de datos
@@ -130,17 +131,16 @@ app.post('/google', async (req,res)=>{
                         ok:false,
                         err
                     });
-                }else{
-                    let token = jwt.sign({ //genero nuevo token
-                        usuario: usuarioDB,
-                    }, process.env.SEED_TOKEN, {expiresIn: process.env.CADUCIDAD_TOKEN});
-                    
-                    return res.json({
-                        ok:true,
-                        usuario:usuarioDB,
-                        token
-                    });
                 }
+                let token = jwt.sign({ //genero nuevo token
+                    usuario: usuarioDB,
+                }, process.env.SEED_TOKEN, {expiresIn: process.env.CADUCIDAD_TOKEN});
+                
+                return res.json({
+                    ok:true,
+                    usuario:usuarioDB,
+                    token
+                });
             });
         }
     });
