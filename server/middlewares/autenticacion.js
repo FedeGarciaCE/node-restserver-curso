@@ -75,5 +75,6 @@ let verificaTokenImg = (req, res, next)=>{
 
 module.exports = {
     verificaToken,
-    verificarAdmin_Role
+    verificarAdmin_Role,
+    verificaTokenImg
 };
